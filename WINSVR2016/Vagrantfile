@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/windows-server"
+  config.vm.box_version = "1809.0.2109"
+  config.vm.define "WINSVR2016" do |svr2016|
+    svr2016.vm.hostname = "WINSVR2016-TEST"
+    svr2016.vm.network "private_network", bridge: "ExtSwitch"
+    # svr2016.vm.synced_folder ".", "/vagrant" , disabled: true
+    svr2016.vm.synced_folder ".", "/vagrant", type: "smb", 
+      smb_password: "password", smb_username: "user"
+    svr2016.vm.provider "hyperv" do |hv|
+      # Number of virtual CPUs allocated to VM at startup.
+      hv.cpus = 2
+
+      # Customize the amount of memory on the VM:
+      hv.memory = 4096
+      hv.vmname = "WINSVR2016-TEST"
+      
+      # Turn on Nested Virtualization
+      hv.enable_virtualization_extensions = true
+
+      # Use Differencing Disk
+      hv.linked_clone = true
+    end
+  end
+end
