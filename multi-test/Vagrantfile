@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+servers=[
+  {
+    :hostname => "SVR2019TEST",
+    :box => "gusztavvargadr/windows-server",
+    :box_version => "1809.0.2109",
+    :ram => 4096,
+    :cpu => 2
+  },
+  {
+    :hostname => "CORE2019TEST",
+    :box => "gusztavvargadr/windows-server",
+    :box_version => "1809.0.2108",
+    :ram => 2048,
+    :cpu => 1
+  }
+]
+
+Vagrant.configure(2) do |config|
+  servers.each do |server|
+    config.vm.define server[:hostname] do |node|
+        node.vm.box = server[:box]
+        node.vm.box_version = server[:box_version]
+        node.vm.hostname = server[:hostname]
+        node.vm.network "private_network", bridge: "ExtSwitch"
+        node.vm.synced_folder ".", "/vagrant", type: "smb", 
+          smb_password: "password", smb_username: "user"
+
+        node.vm.provider "hyperv" do |hv|
+          hv.cpus = server[:cpu]
+          hv.memory = server[:ram]
+          hv.vmname = server[:hostname]
+
+          hv.enable_virtualization_extensions = true
+          hv.linked_clone = true
+        end
+    end
+  end
+end
